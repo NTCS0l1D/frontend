@@ -4,3 +4,4 @@
 
 ## 07/08/2024
 
+## iniciando com git
