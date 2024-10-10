@@ -2,30 +2,31 @@
 
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap"
 
-
 export default function Pagina({ titulo, children }) {
 
   return (
     <>
       {/* Barra de Navegação */}
-      <Navbar bg="dark" data-bs-theme="dark">
+      <Navbar style={{ backgroundColor: '#FFFAF0' }}>
         <Container>
-          <Navbar.Brand href="/">Home</Navbar.Brand>
+          <Navbar.Brand href="/" style={{ color: '#6A5ACD', fontWeight: 'bold' }}>Home</Navbar.Brand>
           <Nav className="me-auto">
-            <NavDropdown title="Formulários" id="basic-nav-dropdown">
-              <NavDropdown.Item href="/formularios/conversor">Conversor de moedas</NavDropdown.Item>
+            <NavDropdown title="Conversor" id="basic-nav-dropdown" style={{ color: '#333' }}>
+              <NavDropdown.Item href="/formularios/conversor" style={{ backgroundColor: '#FFF0F5', color: '#6A5ACD' }}>
+                Conversor de Moedas
+              </NavDropdown.Item>
             </NavDropdown>
           </Nav>
         </Container>
       </Navbar>
 
       {/* Barra de Titulo */}
-      <div className="bg-secondary text-center text-white py-2">
+      <div style={{ backgroundColor: '#7FFFD4', color: '#333', textAlign: 'center', padding: '20px 0' }}>
         <h1>{titulo}</h1>
       </div>
 
-      {/* Conteudo da Página */}
-      <Container className="mt-2">
+      {/* Conteúdo da Página */}
+      <Container className="mt-4" style={{ backgroundColor: '#FFFAF0', padding: '20px', borderRadius: '10px' }}>
         {children}
       </Container>
     </>
