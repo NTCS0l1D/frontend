@@ -1,42 +1,12 @@
-"use client"
-
-import React, { createContext } from 'react';
-import { Formik, Form, Field } from 'formik';
+"use client";
+import React, { useState } from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import InputMask from 'react-input-mask';
-import { FaCheck, FaTrash } from 'react-icons/fa';
-import { Button, Col, Row } from 'react-bootstrap';
 
-// Esquema de validação com Yup
-const validationSchema = Yup.object({
-  tipo: Yup.string().required('Obrigatório'),
-  finalidade: Yup.string().required('Obrigatório'),
-  valor: Yup.number().required('Obrigatório'),
-  area: Yup.number().required('Obrigatório'),
-  quartos: Yup.number().required('Obrigatório'),
-  banheiros: Yup.number().required('Obrigatório'),
-  descricao: Yup.string().required('Obrigatório'),
-  fotos: Yup.mixed().required('Envie pelo menos uma foto do imóvel'),
-  vagasGaragem: Yup.number().required('Obrigatório'),
-  endereco: Yup.object({
-    cep: Yup.string().required('Obrigatório'),
-    logradouro: Yup.string().required('Obrigatório'),
-    numero: Yup.string().required('Obrigatório'),
-    complemento: Yup.string(),
-    bairro: Yup.string().required('Obrigatório'),
-    cidade: Yup.string().required('Obrigatório'),
-    UF: Yup.string().required('Obrigatório'),
-  }),
-  proprietario: Yup.object({
-    nome: Yup.string().required('Obrigatório'),
-    CPF: Yup.string().required('Obrigatório'),
-    telefone: Yup.string().required('Obrigatório'),
-    email: Yup.string().email('E-mail inválido').required('Obrigatório'),
-  }),
-});
+const CadastroForm = () => {
+  const [selectedFiles, setSelectedFiles] = useState(null);
 
-const FormularioImovel = () => {
-  // Valores iniciais do formulário
   const initialValues = {
     tipo: '',
     finalidade: '',
@@ -45,6 +15,7 @@ const FormularioImovel = () => {
     quartos: '',
     banheiros: '',
     descricao: '',
+    foto: '',
     vagasGaragem: '',
     endereco: {
       cep: '',
@@ -63,195 +34,235 @@ const FormularioImovel = () => {
     }
   };
 
+  const validationSchema = Yup.object({
+    tipo: Yup.string().required('Tipo é obrigatório'),
+    finalidade: Yup.string().required('Finalidade é obrigatória'),
+    valor: Yup.number().required('Valor é obrigatório'),
+    area: Yup.number().required('Área é obrigatória'),
+    quartos: Yup.number().required('Número de quartos é obrigatório'),
+    banheiros: Yup.number().required('Número de banheiros é obrigatório'),
+    descricao: Yup.string().required('Descrição é obrigatória'),
+    foto: Yup.mixed().required('Foto é obrigatória'),
+    vagasGaragem: Yup.number().required('Número de vagas de garagem é obrigatório'),
+    endereco: Yup.object({
+      cep: Yup.string().required('CEP é obrigatório'),
+      logradouro: Yup.string().required('Logradouro é obrigatório'),
+      numero: Yup.string().required('Número é obrigatório'),
+      complemento: Yup.string(),
+      bairro: Yup.string().required('Bairro é obrigatório'),
+      cidade: Yup.string().required('Cidade é obrigatória'),
+      UF: Yup.string().required('UF é obrigatório'),
+    }),
+    proprietario: Yup.object({
+      nome: Yup.string().required('Nome é obrigatório'),
+      CPF: Yup.string().required('CPF é obrigatório'),
+      telefone: Yup.string().required('Telefone é obrigatório'),
+      email: Yup.string().email('Email inválido').required('Email é obrigatório')
+    })
+  });
+
   const handleSubmit = (values) => {
-    console.log('Dados do formulário:', values);
+    console.log('Dados do Formulário:', values);
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.currentTarget.files[0];
+    if (file && file.type.startsWith('image/')) {
+      setSelectedFiles(file);
+    } else {
+      alert('Por favor, selecione uma imagem válida.');
+    }
   };
 
   return (
-    <div className="container">
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ values, handleChange, handleBlur, handleSubmit, errors, touched, setFieldValue }) => (
-          <Form noValidate onSubmit={handleSubmit}>
-            {/* Dados do Imóvel */}
-            <h4 className="text-center mb-4">Dados do Imóvel</h4>
-            <Row className="mb-3">
-              <Col>
-                <label htmlFor="tipo">Tipo:</label>
-                <Field as="select" name="tipo" className="form-control">
-                  <option value="">Selecione</option>
+    <div style={{
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      minHeight: '100vh',
+      backgroundColor: '#f5f5f5'
+    }}>
+      <div style={{
+        backgroundColor: '#f0f8ff',
+        padding: '20px', 
+        borderRadius: '10px', 
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
+        maxWidth: '600px', 
+        width: '100%'
+      }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Cadastro de Imóvel</h1>
+        
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ setFieldValue, resetForm, isSubmitting }) => (
+            <Form>
+              {/* Dados do Imóvel */}
+              <h3>Dados do Imóvel</h3>
+
+              <div className="form-group">
+                <label htmlFor="tipo">Tipo</label>
+                <Field as="select" id="tipo" name="tipo" className="form-control">
+                  <option value="">Selecione o tipo de imóvel</option>
                   <option value="casa">Casa</option>
                   <option value="apartamento">Apartamento</option>
-                  {/* Adicione mais opções conforme necessário */}
+                  <option value="terreno">Terreno</option>
+                  <option value="sala comercial">Sala Comercial</option>
                 </Field>
-                {errors.tipo && touched.tipo ? <div className="error">{errors.tipo}</div> : null}
-              </Col>
-              <Col>
-                <label htmlFor="finalidade">Finalidade:</label>
-                <Field as="select" name="finalidade" className="form-control">
-                  <option value="">Selecione</option>
+                <ErrorMessage name="tipo" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="finalidade">Finalidade</label>
+                <Field as="select" id="finalidade" name="finalidade" className="form-control">
+                  <option value="">Selecione a finalidade</option>
                   <option value="venda">Venda</option>
                   <option value="aluguel">Aluguel</option>
                 </Field>
-                {errors.finalidade && touched.finalidade ? <div className="error">{errors.finalidade}</div> : null}
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col>
-                <label htmlFor="valor">Valor:</label>
-                <Field type="number" name="valor" className="form-control" />
-                {errors.valor && touched.valor ? <div className="error">{errors.valor}</div> : null}
-              </Col>
-              <Col>
-                <label htmlFor="area">Área (m²):</label>
-                <Field type="number" name="area" className="form-control" />
-                {errors.area && touched.area ? <div className="error">{errors.area}</div> : null}
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col>
-                <label htmlFor="quartos">Quartos:</label>
-                <Field type="number" name="quartos" className="form-control" />
-                {errors.quartos && touched.quartos ? <div className="error">{errors.quartos}</div> : null}
-              </Col>
-              <Col>
-                <label htmlFor="banheiros">Banheiros:</label>
-                <Field type="number" name="banheiros" className="form-control" />
-                {errors.banheiros && touched.banheiros ? <div className="error">{errors.banheiros}</div> : null}
-              </Col>
-              <Col>
-                <label htmlFor="vagasGaragem">Vagas de Garagem:</label>
-                <Field type="number" name="vagasGaragem" className="form-control" />
-                {errors.vagasGaragem && touched.vagasGaragem ? <div className="error">{errors.vagasGaragem}</div> : null}
-              </Col>
-            </Row>
-            <div className="mb-3">
-              <label htmlFor="descricao">Descrição:</label>
-              <Field as="textarea" name="descricao" className="form-control" rows="3" />
-              {errors.descricao && touched.descricao ? <div className="error">{errors.descricao}</div> : null}
-            </div>
-            <div>
-            <label htmlFor="descricao">Descrição</label>
-            <Field name="descricao" as="textarea" />
-            <ErrorMessage name="descricao" component="div" />
-          </div>
-           {/* Campo para upload de fotos */}
-           <div>
-            <label htmlFor="fotos">Fotos do Imóvel</label>
-            <input
-              id="fotos"
-              name="fotos"
-              type="file"
-              multiple
-              onChange={(event) => {
-                setFieldValue("fotos", event.currentTarget.files);
-              }}
-            />
-            <ErrorMessage name="fotos" component="div" />
-          </div>
+                <ErrorMessage name="finalidade" component="div" className="text-danger" />
+              </div>
 
-            {/* Endereço */}
-            <h4 className="text-center mb-4">Endereço</h4>
-            <Row className="mb-3">
-              <Col>
-                <label htmlFor="cep">CEP:</label>
-                <InputMask
-                  mask="99999-999"
-                  value={values.endereco.cep}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className="form-control"
-                  name="endereco.cep"
-                />
-                {errors.endereco?.cep && touched.endereco?.cep ? <div className="error">{errors.endereco.cep}</div> : null}
-              </Col>
-              <Col>
-                <label htmlFor="logradouro">Logradouro:</label>
-                <Field name="endereco.logradouro" className="form-control" />
-                {errors.endereco?.logradouro && touched.endereco?.logradouro ? <div className="error">{errors.endereco.logradouro}</div> : null}
-              </Col>
-              <Col>
-                <label htmlFor="numero">Número:</label>
-                <Field name="endereco.numero" className="form-control" />
-                {errors.endereco?.numero && touched.endereco?.numero ? <div className="error">{errors.endereco.numero}</div> : null}
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col>
-                <label htmlFor="bairro">Bairro:</label>
-                <Field name="endereco.bairro" className="form-control" />
-                {errors.endereco?.bairro && touched.endereco?.bairro ? <div className="error">{errors.endereco.bairro}</div> : null}
-              </Col>
-              <Col>
-                <label htmlFor="cidade">Cidade:</label>
-                <Field name="endereco.cidade" className="form-control" />
-                {errors.endereco?.cidade && touched.endereco?.cidade ? <div className="error">{errors.endereco.cidade}</div> : null}
-              </Col>
-              <Col>
-                <label htmlFor="UF">UF:</label>
-                <Field name="endereco.UF" className="form-control" />
-                {errors.endereco?.UF && touched.endereco?.UF ? <div className="error">{errors.endereco.UF}</div> : null}
-              </Col>
-            </Row>
+              <div className="form-group">
+                <label htmlFor="valor">Valor</label>
+                <Field type="number" id="valor" name="valor" className="form-control" />
+                <ErrorMessage name="valor" component="div" className="text-danger" />
+              </div>
 
-            {/* Proprietário */}
-            <h4 className="text-center mb-4">Proprietário</h4>
-            <Row className="mb-3">
-              <Col>
-                <label htmlFor="nome">Nome do Proprietário:</label>
-                <Field name="proprietario.nome" className="form-control" />
-                {errors.proprietario?.nome && touched.proprietario?.nome ? <div className="error">{errors.proprietario.nome}</div> : null}
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col>
-                <label htmlFor="CPF">CPF do Proprietário:</label>
-                <InputMask
-                  mask="999.999.999-99"
-                  value={values.proprietario.CPF}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className="form-control"
-                  name="proprietario.CPF"
-                />
-                {errors.proprietario?.CPF && touched.proprietario?.CPF ? <div className="error">{errors.proprietario.CPF}</div> : null}
-              </Col>
-              <Col>
-                <label htmlFor="telefone">Telefone do Proprietário:</label>
-                <InputMask
-                  mask="(99) 99999-9999"
-                  value={values.proprietario.telefone}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className="form-control"
-                  name="proprietario.telefone"
-                />
-                {errors.proprietario?.telefone && touched.proprietario?.telefone ? <div className="error">{errors.proprietario.telefone}</div> : null}
-              </Col>
-            </Row>
-            <div className="mb-3">
-              <label htmlFor="email">E-mail do Proprietário:</label>
-              <Field type="email" name="proprietario.email" className="form-control" />
-              {errors.proprietario?.email && touched.proprietario?.email ? <div className="error">{errors.proprietario.email}</div> : null}
-            </div>
+              <div className="form-group">
+                <label htmlFor="area">Área (m²)</label>
+                <Field type="number" id="area" name="area" className="form-control" />
+                <ErrorMessage name="area" component="div" className="text-danger" />
+              </div>
 
-            {/* Botões */}
-            <div className="d-flex justify-content-center mt-4">
-              <Button variant="success" type="submit">
-                <FaCheck /> Salvar
-              </Button>
-              <Button variant="danger" type="button" className="ms-3">
-                <FaTrash /> Limpar
-              </Button>
-            </div>
-          </Form>
-        )}
-      </Formik>
+              <div className="form-group">
+                <label htmlFor="quartos">Número de Quartos</label>
+                <Field type="number" id="quartos" name="quartos" className="form-control" />
+                <ErrorMessage name="quartos" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="banheiros">Número de Banheiros</label>
+                <Field type="number" id="banheiros" name="banheiros" className="form-control" />
+                <ErrorMessage name="banheiros" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="descricao">Descrição</label>
+                <Field as="textarea" id="descricao" name="descricao" className="form-control" />
+                <ErrorMessage name="descricao" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="foto">Foto do Imóvel</label>
+                <input
+                  type="file"
+                  id="foto"
+                  name="foto"
+                  className="form-control"
+                  onChange={handleFileChange}
+                />
+                <ErrorMessage name="foto" component="div" className="text-danger" />
+                {selectedFiles && (
+                  <img src={URL.createObjectURL(selectedFiles)} alt="Preview" style={{ width: '100%', height: 'auto', marginTop: '10px' }} />
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="vagasGaragem">Número de Vagas de Garagem</label>
+                <Field type="number" id="vagasGaragem" name="vagasGaragem" className="form-control" />
+                <ErrorMessage name="vagasGaragem" component="div" className="text-danger" />
+              </div>
+
+              {/* Endereço */}
+              <h3>Endereço</h3>
+
+              <div className="form-group">
+                <label htmlFor="cep">CEP</label>
+                <Field type="text" id="cep" name="endereco.cep" className="form-control" />
+                <ErrorMessage name="endereco.cep" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="logradouro">Logradouro</label>
+                <Field type="text" id="logradouro" name="endereco.logradouro" className="form-control" />
+                <ErrorMessage name="endereco.logradouro" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="numero">Número</label>
+                <Field type="text" id="numero" name="endereco.numero" className="form-control" />
+                <ErrorMessage name="endereco.numero" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="complemento">Complemento</label>
+                <Field type="text" id="complemento" name="endereco.complemento" className="form-control" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="bairro">Bairro</label>
+                <Field type="text" id="bairro" name="endereco.bairro" className="form-control" />
+                <ErrorMessage name="endereco.bairro" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="cidade">Cidade</label>
+                <Field type="text" id="cidade" name="endereco.cidade" className="form-control" />
+                <ErrorMessage name="endereco.cidade" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="UF">UF</label>
+                <Field type="text" id="UF" name="endereco.UF" className="form-control" />
+                <ErrorMessage name="endereco.UF" component="div" className="text-danger" />
+              </div>
+
+              {/* Proprietário */}
+              <h3>Proprietário</h3>
+
+              <div className="form-group">
+                <label htmlFor="nome">Nome</label>
+                <Field type="text" id="nome" name="proprietario.nome" className="form-control" />
+                <ErrorMessage name="proprietario.nome" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="CPF">CPF</label>
+                <Field as={InputMask} mask="999.999.999-99" id="CPF" name="proprietario.CPF" className="form-control" />
+                <ErrorMessage name="proprietario.CPF" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="telefone">Telefone</label>
+                <Field as={InputMask} mask="(99) 99999-9999" id="telefone" name="proprietario.telefone" className="form-control" />
+                <ErrorMessage name="proprietario.telefone" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <Field type="email" id="email" name="proprietario.email" className="form-control" />
+                <ErrorMessage name="proprietario.email" component="div" className="text-danger" />
+              </div>
+
+              <div className="form-group mt-3">
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                Enviar
+              </button>
+              </div>
+
+              <div className="form-group mt-3">
+              <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                Limpar
+              </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      </div>
     </div>
   );
 };
 
-export default FormularioImovel;
+export default CadastroForm;
