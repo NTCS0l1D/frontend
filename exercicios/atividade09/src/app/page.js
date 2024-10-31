@@ -2,15 +2,24 @@
 
 import Pagina from '@/components/Pagina'
 import { Button, Card, Col, Row } from 'react-bootstrap'
+import { useEffect, useState } from 'react'
 
 export default function HomePage() {
+  const [faculdades, setFaculdades] = useState([]);
+  const [cursos, setCursos] = useState([]);
+  const [professores, setProfessores] = useState([]);
+  const [disciplinas, setDisciplinas] = useState([]);
+  const [alunos, setAlunos] = useState([]);
 
-
-  const faculdades = JSON.parse(localStorage.getItem("faculdades")) || []
-  const cursos = JSON.parse(localStorage.getItem("cursos")) || []
-  const professores = JSON.parse(localStorage.getItem("professores")) || []
-  const disciplinas = JSON.parse(localStorage.getItem("disciplinas")) || []
-  const alunos = JSON.parse(localStorage.getItem("alunos")) || []
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setFaculdades(JSON.parse(localStorage.getItem("faculdades")) || []);
+      setCursos(JSON.parse(localStorage.getItem("cursos")) || []);
+      setProfessores(JSON.parse(localStorage.getItem("professores")) || []);
+      setDisciplinas(JSON.parse(localStorage.getItem("disciplinas")) || []);
+      setAlunos(JSON.parse(localStorage.getItem("alunos")) || []);
+    }
+  }, []);
 
   const lista = [
     {
@@ -38,16 +47,14 @@ export default function HomePage() {
       imagem: "https://i.pinimg.com/236x/ce/96/4d/ce964d843b92374b8b96e105ffa82831.jpg", quantidade: alunos.length,
       link: "/alunos"
     },
-  ]
-
-
+  ];
 
   return (
     <Pagina titulo={"Projeto IESB"}>
       <Row md={4}>
-        {lista.map(item => (
-          <Col className='py-2'>
-            <Card style={{height: '100%'}}>
+        {lista.map((item, index) => (
+          <Col className='py-2' key={index}>
+            <Card style={{ height: '100%' }}>
               <Card.Img src={item.imagem} style={{ height: '100%' }} />
               <Card.Body>
                 <Card.Title>{item.nome}</Card.Title>
@@ -59,8 +66,7 @@ export default function HomePage() {
             </Card>
           </Col>
         ))}
-
       </Row>
     </Pagina>
-  )
+  );
 }

@@ -12,12 +12,10 @@ import { useState, useEffect } from 'react'
 export default function AlunoFormPage(props) {
   const router = useRouter()
 
-  // Estado para armazenar faculdades, cursos e cursos filtrados
   const [faculdades, setFaculdades] = useState([])
   const [cursos, setCursos] = useState([])
   const [cursosFiltrados, setCursosFiltrados] = useState([])
 
-  // Carregar dados do localStorage no cliente
   useEffect(() => {
     const faculdadesSalvas = JSON.parse(localStorage.getItem('faculdades')) || []
     const cursosSalvos = JSON.parse(localStorage.getItem('cursos')) || []
@@ -25,21 +23,19 @@ export default function AlunoFormPage(props) {
     setCursos(cursosSalvos)
   }, [])
 
-  // Recuperando id para edição
   const id = props.searchParams.id
   const alunos = JSON.parse(localStorage.getItem('alunos')) || []
   const alunoEditado = alunos.find(item => item.id == id)
 
-  // Função para salvar os dados do formulário
   function salvar(dados) {
-    const alunosAtualizados = id ? alunos.map(aluno => (aluno.id === id ? dados : aluno)) : [...alunos, { ...dados, id: v4() }]
-    
+    const alunosAtualizados = id 
+      ? alunos.map(aluno => (aluno.id === id ? dados : aluno)) 
+      : [...alunos, { ...dados, id: v4() }]
     localStorage.setItem('alunos', JSON.stringify(alunosAtualizados))
     alert("Aluno salvo com sucesso!")
     router.push("/alunos")
   }
 
-  // Valores iniciais do formulário
   const initialValues = {
     nome: '',
     sobrenome: '',
@@ -53,7 +49,6 @@ export default function AlunoFormPage(props) {
     foto: ''
   }
 
-  // Esquema de validação com Yup
   const validationSchema = Yup.object().shape({
     nome: Yup.string().required("Campo obrigatório"),
     sobrenome: Yup.string().required("Campo obrigatório"),
@@ -67,28 +62,31 @@ export default function AlunoFormPage(props) {
     foto: Yup.string().url("URL inválida").required("Campo obrigatório")
   })
 
-  // Atualiza a lista de cursos com base na faculdade selecionada
   const filtrarCursosPorFaculdade = (faculdadeSelecionada) => {
-    const cursosFiltrados = cursos.filter(curso => curso.faculdadeId === faculdadeSelecionada)
-    setCursosFiltrados(cursosFiltrados)
-  }
+    // Filtra os cursos onde o nome da faculdade coincide com o valor selecionado
+    const cursosFiltrados = cursos.filter(curso => curso.faculdade === faculdadeSelecionada);
+    console.log("Faculdade selecionada:", faculdadeSelecionada);
+    console.log("Cursos encontrados após filtro:", cursosFiltrados);
+    setCursosFiltrados(cursosFiltrados);
+  };
+  
 
   return (
     <Pagina titulo={"Cadastro de Aluno"}>
-
       <Formik
         initialValues={alunoEditado || initialValues}
         validationSchema={validationSchema}
         onSubmit={salvar}
       >
         {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue }) => {
-          // Filtra cursos ao selecionar uma faculdade
+          // Define o handleFaculdadeChange no escopo correto
           const handleFaculdadeChange = (event) => {
-            const faculdadeSelecionada = event.target.value
-            setFieldValue("faculdade", faculdadeSelecionada)
-            filtrarCursosPorFaculdade(faculdadeSelecionada)
-            setFieldValue("curso", "")  // Reseta o campo de curso ao trocar a faculdade
-          }
+            const faculdadeSelecionada = event.target.value;
+            setFieldValue("faculdade", faculdadeSelecionada);
+            filtrarCursosPorFaculdade(faculdadeSelecionada);
+            setFieldValue("curso", ""); // Reseta o campo de curso ao trocar a faculdade
+          };
+          
 
           return (
             <Form onSubmit={handleSubmit}>
@@ -167,43 +165,44 @@ export default function AlunoFormPage(props) {
                   <Form.Control.Feedback type='invalid'>{errors.telefone}</Form.Control.Feedback>
                 </Form.Group>
 
-                <Form.Group as={Col}>
-                  <Form.Label>Faculdade:</Form.Label>
-                  <Form.Select
-                    name='faculdade'
-                    value={values.faculdade}
-                    onChange={handleFaculdadeChange}
-                    onBlur={handleBlur}
-                    isValid={touched.faculdade && !errors.faculdade}
-                    isInvalid={touched.faculdade && errors.faculdade}
-                  >
-                    <option value=''>Selecione</option>
-                    {faculdades.map(faculdade => (
-                      <option key={faculdade.id} value={faculdade.id}>{faculdade.nome}</option>
-                    ))}
-                  </Form.Select>
-                  <Form.Control.Feedback type='invalid'>{errors.faculdade}</Form.Control.Feedback>
-                </Form.Group>
-              </Row>
+                <Row className='mb-2'>
+                  <Form.Group as={Col}>
+                    <Form.Label>Faculdade:</Form.Label>
+                    <Form.Select
+                      name='faculdade'
+                      value={values.faculdade}
+                      onChange={handleFaculdadeChange}
+                      onBlur={handleBlur}
+                      isValid={touched.faculdade && !errors.faculdade}
+                      isInvalid={touched.faculdade && errors.faculdade}
+                    >
+                      <option value=''>Selecione</option>
+                      {faculdades.map(faculdade => (
+                      <option key={faculdade.id} value={faculdade.nome}>{faculdade.nome}</option>
+                      ))}
 
-              <Row className='mb-2'>
-                <Form.Group as={Col}>
-                  <Form.Label>Curso:</Form.Label>
-                  <Form.Select
-                    name='curso'
-                    value={values.curso}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    isValid={touched.curso && !errors.curso}
-                    isInvalid={touched.curso && errors.curso}
-                  >
-                    <option value=''>Selecione</option>
-                    {cursosFiltrados.map(curso => (
-                      <option key={curso.id} value={curso.id}>{curso.nome}</option>
-                    ))}
-                  </Form.Select>
-                  <Form.Control.Feedback type='invalid'>{errors.curso}</Form.Control.Feedback>
-                </Form.Group>
+                    </Form.Select>
+                    <Form.Control.Feedback type='invalid'>{errors.faculdade}</Form.Control.Feedback>
+                  </Form.Group>
+
+                  <Form.Group as={Col}>
+                    <Form.Label>Curso:</Form.Label>
+                    <Form.Select
+                      name='curso'
+                      value={values.curso}
+                      onChange={(e) => setFieldValue("curso", e.target.value)} // Atualiza o curso usando setFieldValue
+                      onBlur={handleBlur}
+                      isValid={touched.curso && !errors.curso}
+                      isInvalid={touched.curso && errors.curso}
+                    >
+                      <option value=''>Selecione</option>
+                      {cursosFiltrados.map(curso => (
+                        <option key={curso.id} value={curso.id}>{curso.nome}</option>
+                      ))}
+                    </Form.Select>
+                    <Form.Control.Feedback type='invalid'>{errors.curso}</Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
 
                 <Form.Group as={Col}>
                   <Form.Label>Período:</Form.Label>
@@ -234,21 +233,25 @@ export default function AlunoFormPage(props) {
                   />
                   <Form.Control.Feedback type='invalid'>{errors.matricula}</Form.Control.Feedback>
                 </Form.Group>
+                </Row>
 
                 <Form.Group as={Col}>
-                  <Form.Label>Foto (URL):</Form.Label>
-                  <Form.Control
-                    name='foto'
-                    type='text'
-                    value={values.foto}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    isValid={touched.foto && !errors.foto}
-                    isInvalid={touched.foto && errors.foto}
-                  />
-                  <Form.Control.Feedback type='invalid'>{errors.foto}</Form.Control.Feedback>
+                <Form.Label>Foto (URL):</Form.Label>
+                <Form.Control
+                  name='foto'
+                  type='text'
+                  value={values.foto}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  isValid={touched.foto && !errors.foto}
+                  isInvalid={touched.foto && errors.foto}
+                />
+                <Form.Control.Feedback type='invalid'>{errors.foto}</Form.Control.Feedback>
+                {/* Renderiza a imagem se a URL estiver disponível */}
+                {values.foto && (
+                  <img src={values.foto} alt="Foto do aluno" style={{ width: '100px', height: 'auto' }} />
+                )}
                 </Form.Group>
-              </Row>
 
               <Button variant="primary" type="submit" className='me-2'>
                 <FaCheck /> Salvar
